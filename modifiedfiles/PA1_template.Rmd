@@ -1,0 +1,78 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+1. Load the data (i.e. read.csv())
+```{r echo=TRUE}
+#fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+#download.file(fileUrl, "DataActivity.zip", mode="wb")
+#unzip("DataActivity.zip")
+activitywithNA <- read.csv("activity.csv")
+```
+2. Process/transform the data (if necessary) into a format suitable for analysis
+```{r echo=TRUE}
+# remove the records which does not have any data
+activity <- activitywithNA[!is.na(activitywithNA$steps),]
+```
+
+## What is mean total number of steps taken per day?
+
+1. Calculate the total number of steps taken per day
+
+```{r echo=TRUE}
+# Calculate the total number of steps for each day
+stepsum <- aggregate(activity$steps, by=list(activity$date), FUN=sum, na.rm=TRUE)
+# Assign column names
+names(stepsum) <- c("date", "steps")
+```
+2. Make a histogram of the total number of steps taken each day
+
+```{r echo=TRUE}
+hist(stepsum$steps, breaks=53, xlab="Sum of Steps", col="red",  main="Histogram of Steps taken each day")
+```
+3. Calculate and report the mean and median of the total number of steps taken per day
+
+```{r}
+# Calculate the mean of number of steps for each day
+stepmean <- aggregate(activity$steps, by=list(activity$date), FUN=mean, na.rm=TRUE)
+names(stepmean) <- c("date", "mean")
+# Calculate the median of number of steps for each day
+stepmedian <- aggregate(activity$steps, by=list(activity$date), FUN=median, na.rm=TRUE)
+names(stepmedian) <- c("date", "median")
+# Combine mean and median datasets
+stepmeanandmedian <- cbind(stepmean,stepmedian$median)
+# Update the column names
+names(stepmeanandmedian) <- c("date", "mean", "median")
+# display the result
+stepmeanandmedian
+```
+
+## What is the average daily activity pattern?
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r}
+plot(activity$interval,activity$steps, type='l', xlab="", ylab="")
+```
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r}
+step5min <- aggregate(activity$steps, by=list(activity$interval), FUN=sum, na.rm=TRUE)
+names(step5min) <- c("interval",  "steps")
+step5minordered <- step5min[order(step5min$steps),]
+step5minordered[nrow(step5minordered), "interval"]
+
+```
+
+## Imputing missing values
+
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r}
+#missing row count
+nrow(activitywithNA) - nrow(activity)
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
